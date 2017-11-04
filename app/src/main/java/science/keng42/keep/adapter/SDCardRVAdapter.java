@@ -40,7 +40,7 @@ public class SDCardRVAdapter extends Adapter<SDCardRVAdapter.SDCardViewHolder> {
                 .inflate(R.layout.rv_backup_item, parent, false);
         if (mPage == 1) {
             ImageView iv = (ImageView) view.findViewById(R.id.iv);
-            iv.setImageResource(R.drawable.ic_backup_file_dropbox_grey600_24dp);
+            iv.setImageResource(R.drawable.ic_backup_file_dropbox);
         }
         return new SDCardViewHolder(view);
     }

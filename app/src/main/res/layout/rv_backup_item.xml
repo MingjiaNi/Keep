@@ -12,7 +12,7 @@
         android:layout_width="56dp"
         android:layout_height="match_parent"
         android:scaleType="centerInside"
-        android:src="@drawable/ic_database_grey600_24dp"/>
+        android:src="@drawable/ic_database_grey"/>
 
     <ImageView
         android:id="@+id/iv_more"
