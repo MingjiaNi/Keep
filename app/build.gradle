@@ -7,7 +7,7 @@ android {
     }
     compileSdkVersion 22
     // build tools 版本
-    buildToolsVersion "22.0.1"
+    buildToolsVersion '26.0.2'
     defaultConfig {
         // 应用的包名
         applicationId "com.github.keng42.keep"
