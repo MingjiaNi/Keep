@@ -57,7 +57,6 @@ import science.keng42.keep.dao.LocationDao;
 import science.keng42.keep.dao.TagDao;
 import science.keng42.keep.model.EntryCard;
 import science.keng42.keep.util.DiskLruCache;
-import science.keng42.keep.util.MyDefaultItemAnim;
 import science.keng42.keep.util.SecureTool;
 import science.keng42.keep.util.SwipeableRVTL;
 
@@ -240,7 +239,7 @@ public class HomeActivity extends AppCompatActivity {
      */
     private void bindRecyclerView() {
         mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setItemAnimator(new MyDefaultItemAnim());
+        // TODO: 11/11/17 refactor Recycle view and add animation
 
         if (getResources().getConfiguration().orientation ==
                 Configuration.ORIENTATION_PORTRAIT) {
