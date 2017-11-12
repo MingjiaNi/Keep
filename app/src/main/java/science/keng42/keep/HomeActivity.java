@@ -33,6 +33,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.facebook.soloader.SoLoader;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -94,6 +96,9 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        SoLoader.init(this, false);
+
         setContentView(R.layout.activity_home);
 
         initView();

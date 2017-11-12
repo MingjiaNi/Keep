@@ -45,6 +45,7 @@ import com.facebook.android.crypto.keychain.SharedPrefsBackedKeyChain;
 import com.facebook.crypto.Crypto;
 import com.facebook.crypto.Entity;
 import com.facebook.crypto.util.SystemNativeCryptoLibrary;
+import com.facebook.soloader.SoLoader;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -122,6 +123,9 @@ public class EntryActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        SoLoader.init(this, false);
+
         setContentView(R.layout.activity_entry);
 
         initView();
