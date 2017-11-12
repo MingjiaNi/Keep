@@ -130,16 +130,14 @@
     <orderEntry type="library" name="com.android.support:support-fragment-24.2.1" level="project" />
     <orderEntry type="library" name="com.android.support:support-v4-24.2.1" level="project" />
     <orderEntry type="library" name="com.google.android.gms:play-services-plus-7.5.0" level="project" />
+    <orderEntry type="library" name="com.facebook.conceal:conceal-2.0.1" level="project" />
     <orderEntry type="library" name="__local_aars__:/home/mingjia/Development/Keep/app/libs/dropbox-android-sdk-1.6.3.jar:unspecified@jar" level="project" />
     <orderEntry type="library" name="com.android.support:cardview-v7-24.2.1" level="project" />
     <orderEntry type="library" name="com.android.support:animated-vector-drawable-24.2.1" level="project" />
     <orderEntry type="library" name="com.google.android.gms:play-services-gcm-7.5.0" level="project" />
     <orderEntry type="library" name="com.google.android.gms:play-services-games-7.5.0" level="project" />
     <orderEntry type="library" name="com.android.support:design-24.2.1" level="project" />
-    <orderEntry type="library" name="__local_aars__:/home/mingjia/Development/Keep/app/libs/conceal_android.jar:unspecified@jar" level="project" />
     <orderEntry type="library" name="com.android.support:recyclerview-v7-24.2.1" level="project" />
-    <orderEntry type="library" name="__local_aars__:/home/mingjia/Development/Keep/app/libs/libconceal.jar:unspecified@jar" level="project" />
-    <orderEntry type="library" name="__local_aars__:/home/mingjia/Development/Keep/app/libs/conceal.jar:unspecified@jar" level="project" />
     <orderEntry type="library" name="com.google.android.gms:play-services-wallet-7.5.0" level="project" />
     <orderEntry type="library" name="com.android.support:support-media-compat-24.2.1" level="project" />
     <orderEntry type="library" name="com.google.android.gms:play-services-identity-7.5.0" level="project" />
