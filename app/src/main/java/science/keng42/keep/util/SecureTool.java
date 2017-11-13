@@ -14,6 +14,7 @@ import com.facebook.crypto.keychain.KeyChain;
 import com.facebook.crypto.util.SystemNativeCryptoLibrary;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -30,6 +31,8 @@ import science.keng42.keep.MyApp;
 /**
  * 有关安全的工具类
  * 包括计算哈希值
+ *
+ * Need to initialize Soloader in activity if we want to use this static class
  */
 public final class SecureTool {
 
@@ -37,10 +40,11 @@ public final class SecureTool {
     private static final String SECURE_CODE_KEY = "SECURE_CODE_KEY";
     private static final String TO_ENCRYPT = "ToEncrypt";
     private static final String PASSWORD_KEY = "Password";
-    private static final String CRYPTO_IS_NOT_AVAILABLE = "Crypto 不可用，检查 Conceal 是否正确加载。";
     private static final String SALT = Secret.SALT;
     private static final String KEEP_CHARSET = "utf-8";
     private static final String DB_ACCESS_TOKEN = "DB_ACCESS_TOKEN";
+
+    public static final String CRYPTO_IS_NOT_AVAILABLE = "Crypto 不可用，检查 Conceal 是否正确加载。";
 
     private SecureTool() {
     }
@@ -362,5 +366,33 @@ public final class SecureTool {
         } catch (Exception e) {
             Log.e(MyApp.TAG, "", e);
         }
+    }
+
+    /**
+     * 解密文件到字符数组用于加载到 Bitmap
+     */
+    public static byte[] decryptFileToBytes(Context context, String path, String password) {
+        KeyChain keyChain = new SharedPrefsBackedKeyChain(context, CryptoConfig.KEY_256);
+        Crypto crypto = AndroidConceal.get().createDefaultCrypto(keyChain);
+
+        if (!crypto.isAvailable()) {
+            Log.e(MyApp.TAG, CRYPTO_IS_NOT_AVAILABLE);
+            return null;
+        }
+
+        try {
+            InputStream fileStream = new FileInputStream(path);
+            InputStream inputStream = crypto.getMacInputStream(fileStream, Entity.create(password));
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            byte[] buf = new byte[MyApp.NORMAL_BYTES_BUFFER_SIZE];
+            int len;
+            while ((len = inputStream.read(buf)) > 0) {
+                outputStream.write(buf, 0, len);
+            }
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            Log.e(MyApp.TAG, "", e);
+        }
+        return null;
     }
 }

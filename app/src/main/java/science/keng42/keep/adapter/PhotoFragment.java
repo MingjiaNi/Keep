@@ -1,5 +1,7 @@
 package science.keng42.keep.adapter;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -30,6 +32,7 @@ import science.keng42.keep.R;
 import science.keng42.keep.bean.Attachment;
 import science.keng42.keep.dao.AttachmentDao;
 import science.keng42.keep.util.BitmapLoaderTask;
+import science.keng42.keep.util.SecureTool;
 
 /**
  * Created by Keng on 2015/5/30
@@ -103,7 +106,9 @@ public class PhotoFragment extends Fragment {
         String filename = mAttachment.getFilename();
         String path = getActivity().getExternalFilesDir(
                 Environment.DIRECTORY_PICTURES) + File.separator;
-        byte[] bytes = decryptFileToBytes(path + filename);
+        Context mContext = getActivity();
+        String password = ((MyApp) mContext).getPassword();
+        byte[] bytes = SecureTool.decryptFileToBytes(getActivity(),path + filename, password);
         if (bytes == null) {
             Log.e(MyApp.TAG, "图片文件解密失败");
             return;
@@ -135,36 +140,6 @@ public class PhotoFragment extends Fragment {
             iv.setImageDrawable(asyncDrawable);
             task.execute(path, w, h);
         }
-    }
-
-    /**
-     * 解密文件到字符数组用于加载到 Bitmap
-     */
-    private byte[] decryptFileToBytes(String path) {
-        Crypto crypto = new Crypto(
-                new SharedPrefsBackedKeyChain(getActivity()),
-                new SystemNativeCryptoLibrary());
-
-        if (!crypto.isAvailable()) {
-            return null;
-        }
-
-        try {
-            InputStream fileStream = new FileInputStream(path);
-            MyApp myApp = (MyApp) getActivity().getApplication();
-            String password = myApp.getPassword();
-            InputStream inputStream = crypto.getCipherInputStream(fileStream, new Entity(password));
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            byte[] buf = new byte[MyApp.NORMAL_BYTES_BUFFER_SIZE];
-            int len;
-            while ((len = inputStream.read(buf)) > 0) {
-                outputStream.write(buf, 0, len);
-            }
-            return outputStream.toByteArray();
-        } catch (Exception e) {
-            Log.e(MyApp.TAG, "", e);
-        }
-        return null;
     }
 
     /**
