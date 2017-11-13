@@ -60,7 +60,7 @@ public class BitmapLoaderTask extends AsyncTask<Object, Void, Object> {
                     android.R.drawable.ic_menu_report_image);
         }
         isNormalSize = false;
-        byte[] bytes = decryptFileToBytes(path);
+        byte[] bytes = SecureTool.decryptFileToBytes(context, path, mPassword);
         Bitmap bitmap = BitmapTool.getSampleBitmapFromBytes(bytes, reqWidth, reqHeight);
 
         if (context instanceof HomeActivity) {
@@ -71,35 +71,6 @@ public class BitmapLoaderTask extends AsyncTask<Object, Void, Object> {
         }
 
         return bitmap;
-    }
-
-    /**
-     * 解密文件到字符数组用于加载到 Bitmap
-     */
-    private byte[] decryptFileToBytes(String path) {
-
-        Crypto crypto = new Crypto(
-                new SharedPrefsBackedKeyChain(context),
-                new SystemNativeCryptoLibrary());
-
-        if (!crypto.isAvailable()) {
-            return null;
-        }
-
-        try {
-            InputStream fileStream = new FileInputStream(path);
-            InputStream inputStream = crypto.getCipherInputStream(fileStream, new Entity(mPassword));
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            byte[] buf = new byte[NORMAL_BYTES_BUFFER_SIZE];
-            int len;
-            while ((len = inputStream.read(buf)) > 0) {
-                outputStream.write(buf, 0, len);
-            }
-            return outputStream.toByteArray();
-        } catch (Exception e) {
-            Log.e(MyApp.TAG, "", e);
-        }
-        return null;
     }
 
     @Override

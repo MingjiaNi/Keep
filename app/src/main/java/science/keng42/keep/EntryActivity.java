@@ -14,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -41,10 +42,14 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.facebook.android.crypto.keychain.AndroidConceal;
 import com.facebook.android.crypto.keychain.SharedPrefsBackedKeyChain;
 import com.facebook.crypto.Crypto;
+import com.facebook.crypto.CryptoConfig;
 import com.facebook.crypto.Entity;
+import com.facebook.crypto.keychain.KeyChain;
 import com.facebook.crypto.util.SystemNativeCryptoLibrary;
+import com.facebook.soloader.SoLoader;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -122,6 +127,9 @@ public class EntryActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        SoLoader.init(this, false);
+
         setContentView(R.layout.activity_entry);
 
         initView();
@@ -1165,7 +1173,7 @@ public class EntryActivity extends AppCompatActivity {
     }
 
     /**
-     * 修改位置详细信息
+     * 修改位置详细信息 FileUriExposedException
      */
     private void renamePlace(String placeName) {
         LocationDao ld = new LocationDao(this);
@@ -1207,8 +1215,10 @@ public class EntryActivity extends AppCompatActivity {
             // 文件创建成功后继续
             if (photoFile != null) {
                 mNewPictureName = photoFile.getName();
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
-                        Uri.fromFile(photoFile));
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.github.keng42.keep.android.fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             }
         }
@@ -1235,17 +1245,18 @@ public class EntryActivity extends AppCompatActivity {
     private void saveCipherPicture(Uri uri, String filename, String password) {
         String targetPath = getExternalFilesDir(Environment.DIRECTORY_PICTURES) + DATE_SEPARATOR + filename;
 
-        Crypto crypto = new Crypto(
-                new SharedPrefsBackedKeyChain(this),
-                new SystemNativeCryptoLibrary());
+        KeyChain keyChain = new SharedPrefsBackedKeyChain(this, CryptoConfig.KEY_256);
+        Crypto crypto = AndroidConceal.get().createDefaultCrypto(keyChain);
+
         if (!crypto.isAvailable()) {
+            Log.e(MyApp.TAG, SecureTool.CRYPTO_IS_NOT_AVAILABLE);
             return;
         }
 
         try {
             InputStream inputStream = getContentResolver().openInputStream(uri);
             OutputStream fileStream = new FileOutputStream(targetPath);
-            OutputStream outputStream = crypto.getCipherOutputStream(fileStream, new Entity(password));
+            OutputStream outputStream = crypto.getMacOutputStream(fileStream, new Entity(password));
             byte[] buf = new byte[NORMAL_BYTES_BUFFER_SIZE];
             int len;
             while ((len = inputStream.read(buf)) > 0) {

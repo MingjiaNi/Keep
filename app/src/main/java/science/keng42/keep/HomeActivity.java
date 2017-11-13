@@ -33,6 +33,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.facebook.soloader.SoLoader;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,7 +59,6 @@ import science.keng42.keep.dao.LocationDao;
 import science.keng42.keep.dao.TagDao;
 import science.keng42.keep.model.EntryCard;
 import science.keng42.keep.util.DiskLruCache;
-import science.keng42.keep.util.MyDefaultItemAnim;
 import science.keng42.keep.util.SecureTool;
 import science.keng42.keep.util.SwipeableRVTL;
 
@@ -95,6 +96,9 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        SoLoader.init(this, false);
+
         setContentView(R.layout.activity_home);
 
         initView();
@@ -240,7 +244,7 @@ public class HomeActivity extends AppCompatActivity {
      */
     private void bindRecyclerView() {
         mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setItemAnimator(new MyDefaultItemAnim());
+        // TODO: 11/11/17 refactor Recycle view and add animation
 
         if (getResources().getConfiguration().orientation ==
                 Configuration.ORIENTATION_PORTRAIT) {

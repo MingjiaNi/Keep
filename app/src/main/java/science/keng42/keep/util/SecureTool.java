@@ -5,12 +5,16 @@ import android.content.SharedPreferences;
 import android.util.Base64;
 import android.util.Log;
 
+import com.facebook.android.crypto.keychain.AndroidConceal;
 import com.facebook.android.crypto.keychain.SharedPrefsBackedKeyChain;
 import com.facebook.crypto.Crypto;
+import com.facebook.crypto.CryptoConfig;
 import com.facebook.crypto.Entity;
+import com.facebook.crypto.keychain.KeyChain;
 import com.facebook.crypto.util.SystemNativeCryptoLibrary;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -27,6 +31,8 @@ import science.keng42.keep.MyApp;
 /**
  * 有关安全的工具类
  * 包括计算哈希值
+ *
+ * Need to initialize Soloader in activity if we want to use this static class
  */
 public final class SecureTool {
 
@@ -34,10 +40,11 @@ public final class SecureTool {
     private static final String SECURE_CODE_KEY = "SECURE_CODE_KEY";
     private static final String TO_ENCRYPT = "ToEncrypt";
     private static final String PASSWORD_KEY = "Password";
-    private static final String CRYPTO_IS_NOT_AVAILABLE = "Crypto 不可用，检查 Conceal 是否正确加载。";
     private static final String SALT = Secret.SALT;
     private static final String KEEP_CHARSET = "utf-8";
     private static final String DB_ACCESS_TOKEN = "DB_ACCESS_TOKEN";
+
+    public static final String CRYPTO_IS_NOT_AVAILABLE = "Crypto 不可用，检查 Conceal 是否正确加载。";
 
     private SecureTool() {
     }
@@ -193,8 +200,8 @@ public final class SecureTool {
      * @return 密文数组
      */
     public static byte[] encryptByte(Context context, byte[] plainByte, String password) {
-        Crypto crypto = new Crypto(new SharedPrefsBackedKeyChain(context),
-                new SystemNativeCryptoLibrary());
+        KeyChain keyChain = new SharedPrefsBackedKeyChain(context, CryptoConfig.KEY_256);
+        Crypto crypto = AndroidConceal.get().createDefaultCrypto(keyChain);
 
         if (!crypto.isAvailable()) {
             Log.e(MyApp.TAG, CRYPTO_IS_NOT_AVAILABLE);
@@ -202,7 +209,7 @@ public final class SecureTool {
         }
 
         try {
-            return crypto.encrypt(plainByte, new Entity(password));
+            return crypto.encrypt(plainByte, Entity.create(password));
         } catch (Exception e) {
             Log.e(MyApp.TAG, "", e);
         }
@@ -217,8 +224,8 @@ public final class SecureTool {
      * @return 明文数组
      */
     public static byte[] decryptByte(Context context, byte[] cipherByte, String password) {
-        Crypto crypto = new Crypto(new SharedPrefsBackedKeyChain(context),
-                new SystemNativeCryptoLibrary());
+        KeyChain keyChain = new SharedPrefsBackedKeyChain(context, CryptoConfig.KEY_256);
+        Crypto crypto = AndroidConceal.get().createDefaultCrypto(keyChain);
 
         if (!crypto.isAvailable()) {
             Log.e(MyApp.TAG, CRYPTO_IS_NOT_AVAILABLE);
@@ -226,7 +233,7 @@ public final class SecureTool {
         }
 
         try {
-            return crypto.decrypt(cipherByte, new Entity(password));
+            return crypto.decrypt(cipherByte, Entity.create(password));
         } catch (Exception e) {
             Log.e(MyApp.TAG, "", e);
         }
@@ -281,8 +288,8 @@ public final class SecureTool {
      * @param password 密码
      */
     public static void encryptFile(Context context, String path, String password) {
-        Crypto crypto = new Crypto(new SharedPrefsBackedKeyChain(context),
-                new SystemNativeCryptoLibrary());
+        KeyChain keyChain = new SharedPrefsBackedKeyChain(context, CryptoConfig.KEY_256);
+        Crypto crypto = AndroidConceal.get().createDefaultCrypto(keyChain);
 
         if (!crypto.isAvailable()) {
             Log.e(MyApp.TAG, CRYPTO_IS_NOT_AVAILABLE);
@@ -292,7 +299,7 @@ public final class SecureTool {
         try {
             FileInputStream fis = new FileInputStream(path);
             OutputStream fileStream = new BufferedOutputStream(new FileOutputStream(path + ".encrypted"));
-            OutputStream outputStream = crypto.getCipherOutputStream(fileStream, new Entity(password));
+            OutputStream outputStream = crypto.getMacOutputStream(fileStream, Entity.create(password));
 
             int read;
             byte[] buffer = new byte[MyApp.NORMAL_BYTES_BUFFER_SIZE];
@@ -325,9 +332,8 @@ public final class SecureTool {
      * @param password 密码
      */
     public static void decryptFile(Context context, String path, String password) {
-        Crypto crypto = new Crypto(
-                new SharedPrefsBackedKeyChain(context),
-                new SystemNativeCryptoLibrary());
+        KeyChain keyChain = new SharedPrefsBackedKeyChain(context, CryptoConfig.KEY_256);
+        Crypto crypto = AndroidConceal.get().createDefaultCrypto(keyChain);
 
         if (!crypto.isAvailable()) {
             Log.e(MyApp.TAG, CRYPTO_IS_NOT_AVAILABLE);
@@ -337,7 +343,7 @@ public final class SecureTool {
         try {
             FileOutputStream out = new FileOutputStream(path + ".decrypted");
             FileInputStream fileStream = new FileInputStream(path);
-            InputStream inputStream = crypto.getCipherInputStream(fileStream, new Entity(password));
+            InputStream inputStream = crypto.getMacInputStream(fileStream, Entity.create(password));
 
             int read;
             byte[] buffer = new byte[MyApp.NORMAL_BYTES_BUFFER_SIZE];
@@ -360,5 +366,33 @@ public final class SecureTool {
         } catch (Exception e) {
             Log.e(MyApp.TAG, "", e);
         }
+    }
+
+    /**
+     * 解密文件到字符数组用于加载到 Bitmap
+     */
+    public static byte[] decryptFileToBytes(Context context, String path, String password) {
+        KeyChain keyChain = new SharedPrefsBackedKeyChain(context, CryptoConfig.KEY_256);
+        Crypto crypto = AndroidConceal.get().createDefaultCrypto(keyChain);
+
+        if (!crypto.isAvailable()) {
+            Log.e(MyApp.TAG, CRYPTO_IS_NOT_AVAILABLE);
+            return null;
+        }
+
+        try {
+            InputStream fileStream = new FileInputStream(path);
+            InputStream inputStream = crypto.getMacInputStream(fileStream, Entity.create(password));
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            byte[] buf = new byte[MyApp.NORMAL_BYTES_BUFFER_SIZE];
+            int len;
+            while ((len = inputStream.read(buf)) > 0) {
+                outputStream.write(buf, 0, len);
+            }
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            Log.e(MyApp.TAG, "", e);
+        }
+        return null;
     }
 }
