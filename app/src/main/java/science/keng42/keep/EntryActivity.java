@@ -14,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -1172,7 +1173,7 @@ public class EntryActivity extends AppCompatActivity {
     }
 
     /**
-     * 修改位置详细信息
+     * 修改位置详细信息 FileUriExposedException
      */
     private void renamePlace(String placeName) {
         LocationDao ld = new LocationDao(this);
@@ -1214,8 +1215,10 @@ public class EntryActivity extends AppCompatActivity {
             // 文件创建成功后继续
             if (photoFile != null) {
                 mNewPictureName = photoFile.getName();
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
-                        Uri.fromFile(photoFile));
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.github.keng42.keep.android.fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             }
         }
