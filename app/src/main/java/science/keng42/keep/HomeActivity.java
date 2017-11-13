@@ -935,8 +935,8 @@ public class HomeActivity extends AppCompatActivity {
      * 重置安全码
      */
     private void resetCode() {
-        Intent intent = new Intent(this, PasswordActivity.class);
-        intent.putExtra("action", 1);
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra("ResetPassword", 1);
         startActivityForResult(intent, REQUEST_RESET_CODE);
     }
 

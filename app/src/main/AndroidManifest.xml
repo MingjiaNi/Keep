@@ -85,10 +85,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="science.keng42.keep.EntryActivity" />
         </activity>
-        <activity
-            android:name=".PasswordActivity"
-            android:label="@string/title_activity_password" >
-        </activity>
 
         <!-- widget -->
         <service android:name=".service.NewEntryService" >

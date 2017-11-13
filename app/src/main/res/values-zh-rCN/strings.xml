@@ -99,26 +99,20 @@
     <string name="iv_done_cd">验证安全码</string>
     <string name="iv_backspace_cd">删除键</string>
 
-
-    <!--Set password activity-->
-    <string name="set_code_warning">一旦设置完毕，没有任何方法找回你的安全码和数据加密密钥。请确保记录在安全的地方！！！</string>
-    <string name="set_code">安全码（数字）</string>
-    <string name="set_key">数据加密密钥</string>
-    <string name="code_require">必须设置安全码（可为空但必须设置）</string>
-
     <string name="tv_logo">在每一个美好的思想前停留</string>
 
+    <string name="login_instruction">扫描指纹或驶入密码登录</string>
+    <string name="set_password_instruction">设置您的密码</string>
+    <string name="reset_password_instruction">修改密码会导致重新加密所有数据，这会消耗一些时间。非必要请不要修改密码。</string>
     <string name="power_by_google">Power by Google</string>
     <string name="action_set_lang">English</string>
     <string name="hello_world">Hello world!</string>
     <string name="no_label">空标签</string>
     <string name="num_ok">OK</string>
-    <string name="title_activity_set_password">密码</string>
     <string name="no_location">空地点</string>
     <string name="action_reset_code">重置安全码</string>
     <string name="change_password">修改密码？</string>
     <string name="change">修改</string>
-    <string name="change_password_waring">修改密码会导致重新加密所有数据，这会消耗一些时间。非必要请不要修改密码。</string>
     <string name="password_changed">密码已修改</string>
     <string name="password_not_change">密码未修改</string>
     <string name="password">密码</string>
