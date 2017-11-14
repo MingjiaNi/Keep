@@ -17,11 +17,11 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.soloader.SoLoader;
+import com.wei.android.lib.fingerprintidentify.FingerprintIdentify;
+import com.wei.android.lib.fingerprintidentify.base.BaseFingerprint;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,6 +42,8 @@ import science.keng42.keep.dao.FolderDao;
 import science.keng42.keep.dao.LocationDao;
 import science.keng42.keep.util.SecureTool;
 
+import static science.keng42.keep.util.Secret.SALT;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final int MSG_FRESH_PERCENT = 22;
@@ -49,10 +51,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final int HUNDRED = 100;
     public static final int MSG_ENCRYPT_NORMAL_DATA = 3;
     public static final int MSG_RE_ENCRYPT_NORMAL_DATA = 4;
+
     private EditText mEtCode;
     private ImageView mIvDone;
     private ImageView mIvDelete;
     private ProgressDialog mPd;
+
+    public enum ACTIVITY_STATE {
+        LOGIN,
+        SET_PASSWORD,
+        RESET_PASSWORD
+    }
+    private ACTIVITY_STATE activityState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,42 +71,52 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SoLoader.init(this, false);
 
         setContentView(R.layout.activity_main);
-
-        checkIfFirstLaunch();
     }
 
-    /**
-     * 检查是否第一次启动应用
-     */
-    private void checkIfFirstLaunch() {
+    private void setUpActivityState(){
         SharedPreferences sp = getSharedPreferences("Secure", Context.MODE_PRIVATE);
-        boolean firstLaunch = sp.getBoolean("FirstLaunch", true);
-        if (firstLaunch) {
-            SharedPreferences.Editor editor = sp.edit();
-            editor.putBoolean("FirstLaunch", false);
-            editor.apply();
+        if (getIntent().hasExtra("ResetPassword")){
+            activityState = ACTIVITY_STATE.RESET_PASSWORD;
+        }
+        else if (sp.getBoolean("FirstLaunch", true)){
+            activityState = ACTIVITY_STATE.SET_PASSWORD;
+            sp.edit().putBoolean("FirstLaunch", false).apply();
             initDataBase();
         }
-    }
+        else{
+            activityState = ACTIVITY_STATE.LOGIN;
+            FingerprintIdentify mFingerprintIdentify = new FingerprintIdentify(this);
+            mFingerprintIdentify.startIdentify(5, new BaseFingerprint.FingerprintIdentifyListener() {
+                @Override
+                public void onSucceed() {
+                    MyApp myApp = (MyApp) getApplication();
+                    myApp.setPassword(SecureTool.getSecureCode(MainActivity.this));
+                    encryptEntry();
+                }
 
-    /**
-     * 检查安全码是否已设置
-     */
-    private void checkCode() {
-        if (SecureTool.getSecureCode(this) == null) {
-            // 安全码未设置，跳转到设置界面
-            startActivity(new Intent(this, PasswordActivity.class));
-            Toast.makeText(getApplicationContext(),
-                    getResources().getString(R.string.code_require),
-                    Toast.LENGTH_SHORT).show();
-        } else if (validateCode("")) {
-            // 如果安全码设置为空，直接进入主界面
-            initView();
-            encryptEntry();
-        } else {
-            // 安全码输入界面
-            initView();
+                @Override
+                public void onNotMatch(int availableTimes) {
+                    Toast.makeText(getApplicationContext(),
+                            getText(R.string.fingerprint_on_not_match),
+                            Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onFailed(boolean isDeviceLocked) {
+                    Toast.makeText(getApplicationContext(),
+                            getText(R.string.fingerprint_on_failed),
+                            Toast.LENGTH_LONG).show();
+                }
+
+                @Override
+                public void onStartFailedByDeviceLocked() {
+                    Toast.makeText(getApplicationContext(),
+                            getText(R.string.fingerprint_on_device_locked),
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
         }
+        initView();
     }
 
     /**
@@ -107,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mIvDone = (ImageView) findViewById(R.id.iv_done);
         mIvDelete = (ImageView) findViewById(R.id.iv_backspace);
         changeButton();
+        setUpInstruction();
 
         mIvDone.setOnClickListener(this);
         int[] ids = {R.id.tv_0, R.id.tv_1, R.id.tv_2, R.id.tv_3, R.id.tv_4,
@@ -134,6 +155,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    private void setUpInstruction(){
+        String instruction;
+        switch (activityState){
+            case LOGIN:
+                instruction = getString(R.string.login_instruction);
+                break;
+            case SET_PASSWORD:
+                instruction = getString(R.string.set_password_instruction);
+                break;
+            case RESET_PASSWORD:
+                instruction = getString(R.string.reset_password_instruction);
+                break;
+            default:
+                instruction = "activity not set. There is some problem";
+        }
+
+        Toast.makeText(getApplicationContext(),
+                instruction,
+                Toast.LENGTH_LONG).show();
+    }
+
     @Override
     public void onClick(View v) {
         int id = v.getId();
@@ -143,12 +185,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 etDeleteOne();
                 break;
             case R.id.iv_done:
-                validateCode();
+                OnInputDoneClicked();
                 break;
             default:
                 addOne(id);
                 break;
         }
+    }
+
+    private void OnInputDoneClicked(){
+        switch (activityState){
+            case LOGIN:
+                validateCode();
+                break;
+            case SET_PASSWORD:
+                setPasswordAndLogin();
+                break;
+            case RESET_PASSWORD:
+                setPasswordAndEncrypt();
+                break;
+            default:
+                finish();
+        }
+    }
+
+    private void setPasswordAndLogin(){
+        String pin = mEtCode.getText().toString();
+        String pwd = SecureTool.makeSHA256Hash(pin, SALT);
+        SecureTool.saveSecureCodeHash(this, pin);
+        SecureTool.savePasswordCipher(this, pwd, pin);
+        validateCode();
+    }
+
+    private void setPasswordAndEncrypt(){
+        MyApp myApp = (MyApp) getApplication();
+        String pin = mEtCode.getText().toString();
+        String pwd = SecureTool.makeSHA256Hash(pin, SALT);
+        getIntent().putExtra("oldPassword", myApp.getPassword());
+        SecureTool.saveSecureCodeHash(this, pin);
+        SecureTool.savePasswordCipher(this, pwd, pin);
+        reEncryptAllData();
+        finish();
     }
 
     /**
@@ -223,13 +300,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
         SecureTool.resetIdsToEncrypt(this);
-
-        // 检查是否需要重新加密所有数据
-        int action = getIntent().getIntExtra("action", 0);
-        if (action == 1) {
-            // re encrypt all data
-            reEncryptAllData();
-        }
     }
 
     private void reEncryptAllData() {
@@ -498,7 +568,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
-        checkCode();
+
+        setUpActivityState();
     }
 
     private static class ReEncryptHandler extends Handler {
