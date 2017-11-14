@@ -93,6 +93,11 @@
     <string name="num_8">8</string>
     <string name="num_9">9</string>
 
+    <!-- fingerprint authentication-->
+    <string name="fingerprint_on_not_match">请重试</string>
+    <string name="fingerprint_on_failed">指纹解锁失败，请输入密码解锁</string>
+    <string name="fingerprint_on_device_locked">您的设备已被锁定</string>
+    <string name="fingerprint_hint">轻触指纹传感器</string>
 
     <!--ImageView contentDescription-->
     <string name="iv_logo_cd">JKi Logo</string>

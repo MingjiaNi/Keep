@@ -1,22 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fingerprint_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:paddingBottom="8dp"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:paddingTop="16dp">
+
+    <TextView
+        android:id="@+id/fingerprint_description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:text="@string/login_instruction"
+        android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+        android:textColor="?android:attr/textColorSecondary"/>
+
+
+    <ImageView
+        android:id="@+id/fingerprint_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/fingerprint_description"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/ic_fingerprint_32dp"/>
+
+    <TextView
+        android:id="@+id/fingerprint_status"
+        style="@android:style/TextAppearance.Material.Body1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/fingerprint_icon"
+        android:layout_alignTop="@+id/fingerprint_icon"
+        android:layout_marginStart="16dp"
+        android:layout_toEndOf="@+id/fingerprint_icon"
+        android:gravity="center_vertical"
+        android:text="@string/fingerprint_hint" />
+
+    <ImageView
+        android:id="@+id/password_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/fingerprint_icon"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/ic_password_32px"/>
 
     <android.support.design.widget.TextInputLayout
-        android:layout_width="match_parent"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp">
+        android:layout_below="@+id/fingerprint_status"
+        android:layout_toRightOf="@id/password_icon"
+        android:layout_alignLeft="@+id/fingerprint_status">
 
         <EditText
             android:id="@+id/et_rename_label"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/password"/>
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:hint="@string/password" />
     </android.support.design.widget.TextInputLayout>
-</LinearLayout>
+</RelativeLayout>

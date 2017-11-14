@@ -34,6 +34,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.facebook.soloader.SoLoader;
+import com.wei.android.lib.fingerprintidentify.FingerprintIdentify;
+import com.wei.android.lib.fingerprintidentify.base.BaseFingerprint;
 
 import java.io.File;
 import java.io.IOException;
@@ -896,9 +898,6 @@ public class HomeActivity extends AppCompatActivity {
                 .setNegativeButton(R.string.cancel, null)
                 .create();
 
-        MyApp myApp = (MyApp) getApplication();
-        final String password = myApp.getPassword();
-
         d.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(final DialogInterface dialog) {
@@ -907,10 +906,11 @@ public class HomeActivity extends AppCompatActivity {
                 p.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (et.getText().toString().equals(password)) {
+                        if (SecureTool.validateSecureCode(getApplicationContext(), et.getText().toString())) {
                             resetCode();
                             d.dismiss();
-                        } else {
+                        }
+                        else {
                             et.setError(getResources().getString(R.string.wrong_password));
                         }
                     }
@@ -920,6 +920,36 @@ public class HomeActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         dialog.dismiss();
+                    }
+                });
+
+                FingerprintIdentify mFingerprintIdentify = new FingerprintIdentify(getApplicationContext());
+                mFingerprintIdentify.startIdentify(5, new BaseFingerprint.FingerprintIdentifyListener() {
+                    @Override
+                    public void onSucceed() {
+                        resetCode();
+                        d.dismiss();
+                    }
+
+                    @Override
+                    public void onNotMatch(int availableTimes) {
+                        Toast.makeText(getApplicationContext(),
+                                getText(R.string.fingerprint_on_not_match),
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailed(boolean isDeviceLocked) {
+                        Toast.makeText(getApplicationContext(),
+                                getText(R.string.fingerprint_on_failed),
+                                Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onStartFailedByDeviceLocked() {
+                        Toast.makeText(getApplicationContext(),
+                                getText(R.string.fingerprint_on_device_locked),
+                                Toast.LENGTH_SHORT).show();
                     }
                 });
             }

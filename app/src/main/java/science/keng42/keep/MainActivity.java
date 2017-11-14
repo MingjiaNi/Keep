@@ -20,6 +20,8 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.facebook.soloader.SoLoader;
+import com.wei.android.lib.fingerprintidentify.FingerprintIdentify;
+import com.wei.android.lib.fingerprintidentify.base.BaseFingerprint;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -83,6 +85,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         else{
             activityState = ACTIVITY_STATE.LOGIN;
+            FingerprintIdentify mFingerprintIdentify = new FingerprintIdentify(this);
+            mFingerprintIdentify.startIdentify(5, new BaseFingerprint.FingerprintIdentifyListener() {
+                @Override
+                public void onSucceed() {
+                    MyApp myApp = (MyApp) getApplication();
+                    myApp.setPassword(SecureTool.getSecureCode(MainActivity.this));
+                    encryptEntry();
+                }
+
+                @Override
+                public void onNotMatch(int availableTimes) {
+                    Toast.makeText(getApplicationContext(),
+                            getText(R.string.fingerprint_on_not_match),
+                            Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onFailed(boolean isDeviceLocked) {
+                    Toast.makeText(getApplicationContext(),
+                            getText(R.string.fingerprint_on_failed),
+                            Toast.LENGTH_LONG).show();
+                }
+
+                @Override
+                public void onStartFailedByDeviceLocked() {
+                    Toast.makeText(getApplicationContext(),
+                            getText(R.string.fingerprint_on_device_locked),
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
         }
         initView();
     }
@@ -141,7 +173,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Toast.makeText(getApplicationContext(),
                 instruction,
-                Toast.LENGTH_SHORT).show();
+                Toast.LENGTH_LONG).show();
     }
 
     @Override

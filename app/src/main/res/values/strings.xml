@@ -100,6 +100,12 @@
     <string name="iv_done_cd">Confirm secure code</string>
     <string name="iv_backspace_cd">Backspace</string>
 
+    <!-- fingerprint authentication-->
+    <string name="fingerprint_on_not_match">Try again.</string>
+    <string name="fingerprint_on_failed">Fingerprint authentication failed. Use PIN instead.</string>
+    <string name="fingerprint_on_device_locked">Your device has been locked.</string>
+    <string name="fingerprint_hint">Touch sensor</string>
+
     <!--MainActivity-->
     <string name="login_instruction">Use your fingerprint or PIN to login.</string>
     <string name="set_password_instruction">Set your PIN for data encryption and fingerprint authentication.</string>
